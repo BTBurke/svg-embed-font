@@ -33,6 +33,21 @@ One or more preferred font files can be listed on the command line and it will u
 
 If you don't specify the exact font files, it will look in the current directory and all subdirectories for a match, so you can lay out your files in a logical hierarchy and it will find them.  If it exhausts all possible files without finding a match to every font in the SVG file, it will return an error.
 
+### How It Works
+
+The font file is Base64 encoded and included as an stylesheet asset directly in the SVG file.  If you open the file in a text editor, right before the closing `</defs>` tag you will see something like the following for each font:
+
+```
+<style type="text/css">
+	<![CDATA[
+		@font-face {
+			font-family: 'Permanent Marker';
+			src: url('data:application/x-font-ttf;base64,AAEAAAAOAIAAAwBgT1MvMmH1KeQAAAFoAA...<lots more>');
+		}
+	]]>
+</style>
+```
+
 ### Installation
 
 Download the release appropriate for your operating system on the [releases page](https://github.com/BTBurke/svg-embed-font/releases).
