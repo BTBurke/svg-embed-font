@@ -35,14 +35,14 @@ If you don't specify the exact font files, it will look in the current directory
 
 ### How It Works
 
-The font file is Base64 encoded and included as an stylesheet asset directly in the SVG file.  If you open the file in a text editor, right before the closing `</defs>` tag you will see something like the following for each font:
+The font file is Base64 encoded and included as a stylesheet asset directly in the SVG file.  If you open the file in a text editor, right before the closing `</defs>` tag you will see something like the following for each font:
 
 ```
 <style type="text/css">
 	<![CDATA[
 		@font-face {
 			font-family: 'Permanent Marker';
-			src: url('data:application/x-font-ttf;base64,AAEAAAAOAIAAAwBgT1MvMmH1KeQAAAFoAA...<lots more>');
+			src: url('data:application/x-font-ttf;base64,AAEAAAAOAIAAAwBgT1MvMmH1Ke...<lots more>');
 		}
 	]]>
 </style>
