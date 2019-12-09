@@ -5,6 +5,12 @@ SVG is useful for device-independent resolution, but can often be a pain because
 
 If your SVG assets look great on your computer and messed up on everyone else's, it's because the fonts aren't embedded properly in the file.
 
+### Installation
+
+Download the executable appropriate for your operating system on the [releases page](https://github.com/BTBurke/svg-embed-font/releases).
+
+You can also clone the project repository and compile the source code locally if you have the [Go compiler](https://golang.org/) available.
+
 ### Usage
 
 ```
@@ -47,10 +53,6 @@ The font file is Base64 encoded and included as a stylesheet asset directly in t
 	]]>
 </style>
 ```
-
-### Installation
-
-Download the release appropriate for your operating system on the [releases page](https://github.com/BTBurke/svg-embed-font/releases).
 
 ### License
 
