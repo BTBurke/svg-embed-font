@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +18,7 @@ import (
 // Font is a single font family and associated Base64 encoded font file.
 type Font struct {
 	Family string
+	SrcURL string
 	//CmdLineSet is set when the user specifies a particular font file on the command line
 	CmdLineSet  bool
 	EncodedFont string
@@ -36,19 +39,41 @@ func (d *Document) Add(f Font) {
 // FontMap is an alias type for a map of the font-family to a font specification
 type FontMap map[string]Font
 
+func fontFromMatch(familyString string) *Font {
+	result := Font{}
+
+	familyRe := regexp.MustCompile("font-family:(.*?);")
+	familyMatches := familyRe.FindAllStringSubmatch(familyString, -1)
+	for _, match := range familyMatches {
+		name := strings.Trim(match[1], " '\"\t\n\r")
+		if (name == "sans-serif") || (name == "serif") {
+			return nil
+		}
+		result.Family = name
+	}
+
+	srcRe := regexp.MustCompile(`src: url[(]"([^"]*?)"[)];`)
+	srcMatches := srcRe.FindAllStringSubmatch(familyString, -1)
+	for _, match := range srcMatches {
+		url := strings.Trim(match[1], " '\"\t\n\r")
+		result.SrcURL = url
+	}
+
+	return &result
+}
+
 // FindEmbedFonts will analyze the SVG file looking for all unique fonts used.  It will then walk the directory tree
 // starting from the working directory looking for fonts that match the font-family names.  It will then Base64 encode
 // the font and embed it in the SVG file.
 func FindEmbedFonts(svg []byte, dir string) ([]byte, error) {
 	fonts := make(FontMap)
-	re := regexp.MustCompile("font-family:(.*?);")
+	re := regexp.MustCompile("@font-face *{([^}]*?)}")
 	matches := re.FindAllStringSubmatch(string(svg), -1)
 	for _, match := range matches {
-		name := strings.Trim(match[1], " '\"\t\n\r")
-		if (name == "sans-serif") || (name == "serif") {
-			continue
+		font := fontFromMatch(match[1])
+		if font != nil {
+			fonts[font.Family] = *font
 		}
-		fonts[name] = Font{Family: name}
 	}
 	if len(os.Args) > 2 {
 		err := ProcessCmdLineFonts(fonts, os.Args[2:], dir)
@@ -56,6 +81,12 @@ func FindEmbedFonts(svg []byte, dir string) ([]byte, error) {
 			return svg, fmt.Errorf("Error processing command line font: %s", err)
 		}
 	}
+
+	err := ProcessSrcURLs(fonts)
+	if err != nil {
+		return svg, fmt.Errorf("Error processing embedded urls: %s", err)
+	}
+
 	if CheckAllFontsSet(fonts) {
 		svgEmbed, err := Embed(fonts, svg)
 		if err != nil {
@@ -80,6 +111,28 @@ func FindEmbedFonts(svg []byte, dir string) ([]byte, error) {
 	}
 	PrintResults(fonts)
 	return svgEmbed, nil
+}
+
+func ProcessSrcURLs(fm FontMap) error {
+	for family, font := range fm {
+		if len(font.EncodedFont) == 0 && len(font.SrcURL) != 0 {
+			resp, err := http.Get(font.SrcURL)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			body, err := io.ReadAll(resp.Body)
+
+			fm[family] = Font{
+				Family:      family,
+				CmdLineSet:  true,
+				SrcURL:      font.SrcURL,
+				File:        font.SrcURL,
+				EncodedFont: base64.StdEncoding.EncodeToString(body),
+			}
+		}
+	}
+	return nil
 }
 
 // ProcessCmdLineFonts will embed any fonts specified on the command line in the SVG before looking for others
