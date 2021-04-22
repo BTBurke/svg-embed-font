@@ -66,7 +66,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	svgEmbedFileName := strings.Replace(svgFile, ".", ".embed.", 1)
+	svgEmbedFileName := strings.Replace(svgFile, ".svg", ".embed.svg", 1)
 	if err := ioutil.WriteFile(svgEmbedFileName, svgEmbed, 0644); err != nil {
 		fmt.Printf("Error: %s", err)
 		os.Exit(1)
