@@ -50,7 +50,7 @@ The font file is Base64 encoded and included as a stylesheet asset directly in t
 
 ### Installation
 
-Download the release appropriate for your operating system on the [releases page](https://github.com/BTBurke/svg-embed-font/releases).
+Download the release appropriate for your operating system on the [releases page](https://github.com/BTBurke/svg-embed-font/releases), or use the [container on Dockerhub](https://hub.docker.com/repository/docker/ningyuan/svg-embed-font/).
 
 ### License
 
